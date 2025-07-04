@@ -1,28 +1,40 @@
-import { Button, Slider } from '@mui/material';
 import { useState } from 'react';
 import Cropper from 'react-easy-crop';
 import getCroppedImg from '../utils/cropImage';
 import { useCallback } from 'react';
 
 export function ImageUploader() {
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [imageSrc, setImageSrc] = useState(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  } | null>(null);
   const [uploading, setUploading] = useState(false);
 
-  const onCropComplete = useCallback((_, croppedAreaPixels) => {
-    setCroppedAreaPixels(croppedAreaPixels);
-  }, []);
+  const onCropComplete = useCallback(
+    (
+      _croppedArea: any,
+      croppedAreaPixels: { x: number; y: number; width: number; height: number }
+    ) => {
+      setCroppedAreaPixels(croppedAreaPixels);
+    },
+    []
+  );
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = () => {
-        setImageSrc(reader.result);
+        if (typeof reader.result === 'string') {
+          setImageSrc(reader.result);
+        }
       };
       reader.readAsDataURL(file);
       setSelectedFile(file);
@@ -32,11 +44,11 @@ export function ImageUploader() {
   const handleUpload = async () => {
     try {
       setUploading(true);
-      const croppedImageBlob = await getCroppedImg(
-        imageSrc,
+      const croppedImageBlob: Blob = (await getCroppedImg(
+        imageSrc as string,
         croppedAreaPixels,
         rotation
-      );
+      )) as Blob;
 
       const formData = new FormData();
       formData.append('image', croppedImageBlob, 'cropped.png');

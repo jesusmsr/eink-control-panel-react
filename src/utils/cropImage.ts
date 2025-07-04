@@ -1,6 +1,15 @@
-import { createImage, getRadianAngle } from './utils';
+interface CropArea {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
 
-export default function getCroppedImg(imageSrc, crop, rotation = 0) {
+export default function getCroppedImg(
+  imageSrc: string,
+  crop: CropArea,
+  rotation = 0
+): Promise<Blob> {
   const image = new Image();
   image.src = imageSrc;
 
